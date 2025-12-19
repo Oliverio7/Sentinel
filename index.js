@@ -27,6 +27,7 @@ const client = new Client({
 // Modules
 const pingCommand = require("./commands/ping.js");
 const nameCommand = require("./commands/name.js");
+const avatarCommand = require("./commands/avatar.js");
 
 // --- EVENT: CLIENT READY ---
 client.once(Events.ClientReady, (c) => {
@@ -60,20 +61,7 @@ client.on(Events.MessageCreate, async (message) => {
       break;
 
     case "avatar":
-      const targetUser = message.mentions.users.first() || message.author;
-      const avatarUrl = targetUser.displayAvatarURL({
-        size: 1024,
-        dynamic: true,
-      });
-      const avatarEmbed = new EmbedBuilder()
-        .setColor(0x0099ff)
-        .setTitle(`${targetUser.username}'s avatar`)
-        .setImage(avatarUrl)
-        .setFooter({
-          text: `Requested by: ${message.author.username} ID ${targetUser.id}`,
-        })
-        .setTimestamp();
-      message.reply({ embeds: [avatarEmbed] });
+      avatarCommand.execute(message, args);
       break;
 
     case "8ball":
