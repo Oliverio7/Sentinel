@@ -31,6 +31,7 @@ const avatarCommand = require("./commands/avatar.js");
 const eightBallCommand = require("./commands/8ball.js");
 const pokedexCommand = require("./commands/pokedex.js");
 const coinCommand = require("./commands/coin.js");
+const clearCommand = require("./commands/clear.js");
 
 // --- EVENT: CLIENT READY ---
 client.once(Events.ClientReady, (c) => {
@@ -81,45 +82,7 @@ client.on(Events.MessageCreate, async (message) => {
       break;
 
     case "clear":
-    case "purge":
-      if (
-        !message.member.permissions.has(
-          PermissionsBitField.Flags.ManageMessages
-        )
-      ) {
-        message.reply("You don't have permissions to delete messages!");
-        break;
-      }
-
-      if (args.length === 0) {
-        message.reply(
-          "Please specify how many messages to clear. Example: `!clear 5`"
-        );
-        break;
-      }
-
-      const amount = parseInt(args[0]);
-
-      if (isNaN(amount)) {
-        message.reply("That doesn't look like a number");
-        break;
-      } else if (amount < 1 || amount > 100) {
-        message.reply("Please provide a number between 1 and 100");
-        break;
-      }
-
-      try {
-        const deletedMessages = await message.channel.bulkDelete(amount, true);
-        const confirmationMsg = await message.channel.send(
-          `Successfully deleted **${deletedMessages.size}** messages.`
-        );
-        setTimeout(() => {
-          confirmationMsg.delete().catch(() => {});
-        }, 3000);
-      } catch (error) {
-        console.error(error);
-        message.reply("There was an error trying to prune messages.");
-      }
+      clearCommand.execute(message, args);
       break;
     case "serverinfo":
     case "server":
