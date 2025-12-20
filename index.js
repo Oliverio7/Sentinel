@@ -33,6 +33,7 @@ const pokedexCommand = require("./commands/pokedex.js");
 const coinCommand = require("./commands/coin.js");
 const clearCommand = require("./commands/clear.js");
 const serverInfo = require("./commands/serverInfo.js");
+const kick = require("./commands/kick.js");
 
 // --- EVENT: CLIENT READY ---
 client.once(Events.ClientReady, (c) => {
@@ -87,6 +88,9 @@ client.on(Events.MessageCreate, async (message) => {
       break;
     case "serverinfo":
       serverInfo.execute(message, args);
+      break;
+    case "kick":
+      kick.execute(message, args);
       break;
     default:
       // Empty default to avoid spamming "Invalid command"
