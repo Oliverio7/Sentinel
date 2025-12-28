@@ -2,11 +2,11 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const { Client, GatewayIntentBits, Collection } = require("discord.js");
-
+const { initDB } = require("./database/db");
 const TOKEN = process.env.DISCORD_TOKEN;
 
 console.log("1. System starting...");
-
+initDB();
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
