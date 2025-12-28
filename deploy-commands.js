@@ -6,7 +6,7 @@ const path = require("path");
 // Load environment variables
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID; // Optional: For instant updates in development
+const GUILD_ID = process.env.GUILD_ID;
 
 // Validation
 if (!TOKEN || !CLIENT_ID) {
@@ -16,23 +16,31 @@ if (!TOKEN || !CLIENT_ID) {
 }
 
 const commands = [];
-// Resolve path to commands folder
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs
-  .readdirSync(commandsPath)
-  .filter((file) => file.endsWith(".js"));
+// 1. We point to the root command folder
+const foldersPath = path.join(__dirname, "commands");
+// 2. We read the FOLDERS (moderation, information, etc.)
+const commandFolders = fs.readdirSync(foldersPath);
 
-// Load command data
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
+// 3. We iterate over each folder
+for (const folder of commandFolders) {
+  const commandsPath = path.join(foldersPath, folder);
 
-  if ("data" in command && "execute" in command) {
-    commands.push(command.data.toJSON());
-  } else {
-    console.log(
-      `⚠️ Warning: The command at ${file} is missing "data" or "execute".`
-    );
+  // 4. We read the files .js INSIDE that folder
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter((file) => file.endsWith(".js"));
+
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+
+    if ("data" in command && "execute" in command) {
+      commands.push(command.data.toJSON());
+    } else {
+      console.log(
+        `⚠️ Warning: The command at ${file} (Category: ${folder}) is missing "data" or "execute".`
+      );
+    }
   }
 }
 
@@ -46,15 +54,14 @@ const rest = new REST().setToken(TOKEN);
       `Started refreshing ${commands.length} application (/) commands.`
     );
 
-    // Option A: Guild Deployment (Instant update for development)
-    // Requires GUILD_ID in .env
+    // Guild Deployment
     if (GUILD_ID) {
       console.log(`🚀 Deploying to Guild: ${GUILD_ID}`);
       await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
         body: commands,
       });
     }
-    // Option B: Global Deployment (Production - takes ~1 hour to propagate)
+    // Global Deployment
     else {
       console.log(`🌍 Deploying Globally...`);
       await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
